@@ -14,30 +14,62 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
-import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
 public class GameActivity extends AppCompatActivity implements SensorEventListener, LocationListener {
+
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
-    Vector3[] vectors;
 
     private LocationManager locationManager;
     private String provider;
 
+    private static final int FORCE_THRESHOLD = 350;
+    private static final int TIME_THRESHOLD = 100;
+    private static final int SHAKE_TIMEOUT = 500;
+    private static final int SHAKE_DURATION = 1000;
+    private static final int SHAKE_COUNT = 3;
+
+    private float mLastX=-1.0f, mLastY=-1.0f, mLastZ=-1.0f;
+    private long mLastTime;
+    private int mShakeCount = 0;
+    private long mLastShake;
+    private long mLastForce;
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_game, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
 
     @Override
     public final void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -46,54 +78,47 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     public final void onSensorChanged(SensorEvent event) {
-        // In this example, alpha is calculated as t / (t + dT),
-        // where t is the low-pass filter's time-constant and
-        // dT is the event delivery rate.
+        if(!hasAccelerometer()) return;
 
-        final float alpha = 0.8f;
-        float[] gravity = new float[3];
-        float[] linear_acceleration = new float[3];
+        long now = System.currentTimeMillis();
 
-        // Isolate the force of gravity with the low-pass filter.
-        gravity[0] = alpha * gravity[0] + (1 - alpha) * event.values[0];
-        gravity[1] = alpha * gravity[1] + (1 - alpha) * event.values[1];
-        gravity[2] = alpha * gravity[2] + (1 - alpha) * event.values[2];
-
-        // Remove the gravity contribution with the high-pass filter.
-        linear_acceleration[0] = event.values[0] - gravity[0];
-        linear_acceleration[1] = event.values[1] - gravity[1];
-        linear_acceleration[2] = event.values[2] - gravity[2];
-
-        if (vectors[0] == null) {
-            //not set anything yet
-            vectors[0] = new Vector3(linear_acceleration[0], linear_acceleration[1], linear_acceleration[2]);
-        } else if (vectors[0] != null && vectors[1] == null) {
-            //have not set 2nd vector
-            vectors[1] = new Vector3(linear_acceleration[0], linear_acceleration[1], linear_acceleration[2]);
-        } else {
-            //both set, swap and replace
-            vectors[0] = vectors[1];
-            vectors[1] = new Vector3(linear_acceleration[0], linear_acceleration[1], linear_acceleration[2]);
+        if ((now - mLastForce) > SHAKE_TIMEOUT) {
+            mShakeCount = 0;
         }
 
-        TextView textview = (TextView) findViewById(R.id.accelerometer_text);
-        if (vectors[0] != null && vectors[1] != null) {
-            textview.setText("Accelerometer: \n" +
-                            "x: " + vectors[1].x + "\n" +
-                            "y: " + vectors[1].y + "\n" +
-                            "z: " + vectors[1].z + "\n" +
-                            "Distance: " + vectors[0].Distance(vectors[1])
-            );
+        if ((now - mLastTime) > TIME_THRESHOLD) {
+            long diff = now - mLastTime;
+            float speed = Math.abs(event.values[SensorManager.DATA_X] + event.values[SensorManager.DATA_Y] + event.values[SensorManager.DATA_Z] - mLastX - mLastY - mLastZ) / diff * 10000;
+            if (speed > FORCE_THRESHOLD) {
+                if ((++mShakeCount >= SHAKE_COUNT) && (now - mLastShake > SHAKE_DURATION)) {
+                    mLastShake = now;
+                    mShakeCount = 0;
+                    onShake();
+                }
+                mLastForce = now;
+            }
+            mLastTime = now;
+            mLastX = event.values[SensorManager.DATA_X];
+            mLastY = event.values[SensorManager.DATA_Y];
+            mLastZ = event.values[SensorManager.DATA_Z];
         }
     }
 
-    private boolean userDidShakeDevice(float threshold) {
-        if (vectors[0] != null && vectors[1] != null) {
-            if (vectors[0].Distance(vectors[1]) >= threshold) {
-                return true;
-            }
-        }
-        return false;
+    /**
+     * showToast. Generates and displays a toast message to the user.
+     * @param text The text to display to the user
+     */
+    private void showToast(String text){
+        Context context = getApplicationContext();
+        int duration = Toast.LENGTH_SHORT;
+        Toast toast = Toast.makeText(context, text, duration);
+        toast.show();
+    }
+
+    public void onShake(){
+        showToast("Shake!");
+        int score = getRandomNumber(600);
+        setScoreString("" + score);
     }
 
     @Override
@@ -130,8 +155,6 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
-        vectors = new Vector3[2];
-
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
@@ -149,7 +172,7 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
 
         // Get the location manager
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        // Define the criteria how to select the locatioin provider -> use
+        // Define the criteria how to select the location provider -> use
         // default
         Criteria criteria = new Criteria();
         provider = locationManager.getBestProvider(criteria, false);
@@ -179,35 +202,11 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_game, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    public int getRandomNumber(long seed, int max){
-        Random random = new Random(seed);
+    public int getRandomNumber(int max){
+        Random random = new Random();
         return random.nextInt(max);
     }
 
-    // REGION LOCATION & SENSOR REGION
-    // Checking for sensor availability.
     // Check if we have an accelerometer.
     public boolean hasAccelerometer(){
         if (mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null){
@@ -224,24 +223,9 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
 
     private void setLocationString(String text){
         TextView textview = (TextView)findViewById(R.id.location_text);
-        textview.setText("Location: " + text.toString());
+        textview.setText("Location: \n" + text.toString());
     }
 
-    private void setLatitudeString(float lat){
-        TextView textview = (TextView)findViewById(R.id.latitude_text);
-        textview.setText("Latitude: " + lat);
-    }
-
-    private void setLongitudeString(float lon){
-        TextView textview = (TextView)findViewById(R.id.longitude_text);
-        textview.setText("Longitude: " + lon);
-    }
-
-    private void setLocationLatLonString(String location, float lat, float lon){
-        setLocationString(location);
-        setLatitudeString(lat);
-        setLongitudeString(lon);
-    }
 
     public List<Sensor> getAllSensors(){
         List<Sensor> deviceSensors = mSensorManager.getSensorList(Sensor.TYPE_ALL);
@@ -259,9 +243,9 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
         float lat = (float) (location.getLatitude());
         float lon = (float) (location.getLongitude());
 
-        setLatitudeString(lat);
-        setLongitudeString(lon);
-        String ad = "";
+        System.out.println("lat: " + lat + "\nlon: " + lon);
+
+        String ad = "no location";
         try {
 
             Geocoder geo = new Geocoder(this.getApplicationContext(), Locale.getDefault());
@@ -273,18 +257,19 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
             else {
                 if (addresses.size() > 0) {
                     System.out.println(addresses.get(0).getFeatureName() + ", " + addresses.get(0).getLocality() +", " + addresses.get(0).getAdminArea() + ", " + addresses.get(0).getCountryName());
-                    Toast.makeText(getApplicationContext(), "Address:- " + addresses.get(0).getFeatureName()  + addresses.get(0).getAdminArea() + addresses.get(0).getSubAdminArea() + addresses.get(0).getLocality() + addresses.get(0).getSubLocality() + addresses.get(0).getSubThoroughfare(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "Address:- " + addresses.get(0).getFeatureName() + addresses.get(0).getAdminArea() + addresses.get(0).getSubAdminArea() + addresses.get(0).getLocality() + addresses.get(0).getSubLocality() + addresses.get(0).getSubThoroughfare(), Toast.LENGTH_LONG).show();
                     ad = addresses.get(0).getLocality();
+                }else{
+                    System.out.println("Address not empty but size is 0");
                 }
             }
         }
         catch (Exception e) {
             e.printStackTrace(); // getFromLocation() may sometimes fail
         }
+
         if(ad != null){
-            setLocationLatLonString(ad, lat, lon);
-        }else{
-            System.out.println("AD == NULL!!!");
+            setLocationString(ad);
         }
     }
 
@@ -305,8 +290,6 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
     }
 
     // END REGION LOCATION & SENSOR
-
-
 }
 
 

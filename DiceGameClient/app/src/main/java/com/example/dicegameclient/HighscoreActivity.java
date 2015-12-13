@@ -1,18 +1,9 @@
 package com.example.dicegameclient;
 
-import android.content.Context;
-import android.hardware.Sensor;
-import android.hardware.SensorManager;
-import android.location.Location;
-import android.location.LocationManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-
-import java.util.List;
-import java.util.Random;
 
 public class HighscoreActivity extends AppCompatActivity {
 
@@ -43,6 +34,4 @@ public class HighscoreActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-
-
 }

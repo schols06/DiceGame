@@ -2,6 +2,7 @@ package com.example.dicegameclient;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInstaller;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
@@ -45,44 +46,77 @@ public class MainActivity extends AppCompatActivity {
     /**
      * onSubmit. Called when the user presses the submit button.
      * Used to register the user in the database
-     * @param view
+     * @param view the view we're in. Used to extract ip from input-field.
      * @return void
      */
     public void onSubmit(View view) {
-        //Fetch the info entered in input field
-        User user = getUserInfo();
+        // TODO: Check the ip that was entered and try to make a call
+        String ip = getInputIP();
+
+        //Fetch the info (android id)
+        User user = getUser();
+        user.serverIP = ip;
+        // cache the user in the sessionManager
+        SessionManager.getInstance().user = user;
         //If we were able to fetch user info
         if(user != null && user.isValid()){
             Log.d("user: ", user.toString());
 
+
             // Go to next screen
             startIntentHome();
+        }else{
+            Log.d("User", "User registration required");
+            startIntentRegister();
         }
-        //otherwise return
-        Log.d("invalid user", "User registration failed");
-        return;
     }
 
-    public User getUserInfo(){
+    public String getInputIP(){
+        // Get text
+        EditText text = (EditText) findViewById(R.id.input_ip);
+
+        // Optional checking for special characters and formatting
+        String string = text.getText().toString();
+
+        // if it is null or empty
+        if(string == null || string.isEmpty()){
+            string = "invalid ip";
+        }
+
+        // return it
+        return string;
+    }
+
+    public User getUser(){
         User user = new User();
         user.id = getAndroidID();
-        user.name = getInputText();
+        //We don't know the name yet. If the user's id is known in the db, we fetch the name, otherwise make the user register
+        user.name = "";
 
-        //push all to server, on succes callback,continue to next screen
-        Boolean succes = isUserValid(user);
-        if(succes) {
+        //Check if the user's id is known in the db
+        Boolean success = userIsRegistered(user);
+        if(success) {
             // We inform the user, and continue
-            showToast("Registered!");
+            showToast("Welcome " + user.name + "!");
             return user;
         }
-        // If we failed to register, inform the user and take appropriate action.
-        showToast("Failed...");
-
-        //If we did not return at this point, return a new user object and inform the user
-        return new User();
+        return null;
     }
 
-    private Boolean isUserValid(User user){
+    /**
+     * userIsRegistered. Returns true if the user is registered in the db.
+     * @param user the user we would like to check.
+     * @return returns true if the user is known.
+     */
+    private Boolean userIsRegistered(User user){
+        //TODO: Check if we have the user in the database by calling the api and comparing the id.
+
+
+        //TODO: Set the users name if we succeed.
+        user.name = "username";
+
+        // Return true, by calling the user.isValid method.
+        // This validates the fields of the user, to make sure they're not empty.
         return user.isValid();
     }
 
@@ -97,22 +131,7 @@ public class MainActivity extends AppCompatActivity {
         toast.show();
     }
 
-    /**
-     * getInputText. returns the text the user entered in the inputfield.
-     * @return String input text. The name the user entered in the inputfield.
-     */
-    public String getInputText(){
-        // Get text
-        EditText text = (EditText) findViewById(R.id.input_name);
-
-        // Optional checking for special characters and formatting
-        String string = text.getText().toString();
-
-        // return it
-        return string;
-    }
-
-    private String getAndroidID(){
+    private String getAndroidID() {
         String id = Settings.Secure.getString(getApplicationContext().getContentResolver(),
                 Settings.Secure.ANDROID_ID);
         Log.d("android_id", id);
@@ -120,7 +139,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startIntentHome(){
-        Intent intent = new Intent(this, HomeActivity.class);
+        Intent intent = new Intent(this, WelcomeActivity.class);
         startActivity(intent);
     }
+
+    private void startIntentRegister(){
+        Intent intent = new Intent(this, RegisterActivity.class);
+        startActivity(intent);
+    }
+
+
 }

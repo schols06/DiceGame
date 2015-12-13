@@ -6,15 +6,18 @@ package com.example.dicegameclient;
 public class User {
     String id;
     String name;
+    String serverIP;
 
     public User(){
         id = "Invalid";
         name = "Enter a name";
+        serverIP = "localhost";
     }
 
     public User(String id, String name){
         this.id = id;
         this.name = name;
+        serverIP = "localhost";
     }
 
     public boolean isValid(){
