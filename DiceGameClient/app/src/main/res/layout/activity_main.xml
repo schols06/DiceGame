@@ -27,7 +27,8 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:text="@string/connect"
-        android:onClick="onSubmit" />
+        android:onClick="onSubmit"
+        android:elevation="50dp" />
 
     <TextView
         android:id="@+id/textView"

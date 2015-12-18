@@ -43,7 +43,7 @@ public class WelcomeActivity extends AppCompatActivity {
     private void setUsernameText(){
         // Get text
         TextView text = (TextView) findViewById(R.id.text_username);
-        text.setText(SessionManager.getInstance().user.name);
+        text.setText(SessionManager.getInstance().user.getName());
     }
 
     private void startIntentPlay(){

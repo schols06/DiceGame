@@ -15,6 +15,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.provider.Settings;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -42,6 +43,8 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
     private static final int SHAKE_TIMEOUT = 500;
     private static final int SHAKE_DURATION = 1000;
     private static final int SHAKE_COUNT = 3;
+
+    private static final int MAX_SCORE = 600;
 
     private float mLastX=-1.0f, mLastY=-1.0f, mLastZ=-1.0f;
     private long mLastTime;
@@ -116,9 +119,9 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void onShake(){
-        showToast("Shake!");
-        int score = getRandomNumber(600);
+        int score = getRandomNumber(MAX_SCORE);
         setScoreString("" + score);
+        showToast("You rolled " + score + "!");
     }
 
     @Override
@@ -256,8 +259,8 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
             }
             else {
                 if (addresses.size() > 0) {
-                    System.out.println(addresses.get(0).getFeatureName() + ", " + addresses.get(0).getLocality() +", " + addresses.get(0).getAdminArea() + ", " + addresses.get(0).getCountryName());
-                    Toast.makeText(getApplicationContext(), "Address:- " + addresses.get(0).getFeatureName() + addresses.get(0).getAdminArea() + addresses.get(0).getSubAdminArea() + addresses.get(0).getLocality() + addresses.get(0).getSubLocality() + addresses.get(0).getSubThoroughfare(), Toast.LENGTH_LONG).show();
+                    System.out.println(addresses.get(0).getFeatureName() + ", " + addresses.get(0).getLocality() + ", " + addresses.get(0).getAdminArea() + ", " + addresses.get(0).getCountryName());
+                    //Toast.makeText(getApplicationContext(), "Address:- " + addresses.get(0).getFeatureName() + addresses.get(0).getAdminArea() + addresses.get(0).getSubAdminArea() + addresses.get(0).getLocality() + addresses.get(0).getSubLocality() + addresses.get(0).getSubThoroughfare(), Toast.LENGTH_LONG).show();
                     ad = addresses.get(0).getLocality();
                 }else{
                     System.out.println("Address not empty but size is 0");

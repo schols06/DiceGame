@@ -42,11 +42,13 @@ public class RegisterActivity extends AppCompatActivity {
 
     public void onRegister(View view){
         String username = getInputString();
-        if(username != "Enter a name" && username!= "username"){
+        // Let the user class check if this is a valid username
+        if(SessionManager.getInstance().user.isValid(username)){
             // cache the user in the sessionManager
-            SessionManager.getInstance().user.name = username;
+            SessionManager.getInstance().user.setName(username);
             startIntentPlay();
         }else{
+            // Inform the user and try again.
             showToast("Invalid username");
         }
     }

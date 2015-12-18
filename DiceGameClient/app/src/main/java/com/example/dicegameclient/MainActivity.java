@@ -1,8 +1,8 @@
 package com.example.dicegameclient;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageInstaller;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
 
         //Fetch the info (android id)
         User user = getUser();
-        user.serverIP = ip;
+        user.setServerIP(ip);
         // cache the user in the sessionManager
         SessionManager.getInstance().user = user;
         //If we were able to fetch user info
@@ -88,19 +88,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public User getUser(){
-        User user = new User();
-        user.id = getAndroidID();
+        Application application = getApplication();
+        User user = new User(application);
+        String id = user.getId(application);
         //We don't know the name yet. If the user's id is known in the db, we fetch the name, otherwise make the user register
-        user.name = "";
-
         //Check if the user's id is known in the db
         Boolean success = userIsRegistered(user);
         if(success) {
+            // User does exist in db.
+
             // We inform the user, and continue
-            showToast("Welcome " + user.name + "!");
-            return user;
+            showToast("Welcome " + user.getName() + "!");
         }
-        return null;
+        return user;
     }
 
     /**
@@ -112,8 +112,8 @@ public class MainActivity extends AppCompatActivity {
         //TODO: Check if we have the user in the database by calling the api and comparing the id.
 
 
-        //TODO: Set the users name if we succeed.
-        user.name = "username";
+        //TODO: Set the users name if we succeed. (API Returns the name?)
+        user.setName("username");
 
         // Return true, by calling the user.isValid method.
         // This validates the fields of the user, to make sure they're not empty.
@@ -129,13 +129,6 @@ public class MainActivity extends AppCompatActivity {
         int duration = Toast.LENGTH_SHORT;
         Toast toast = Toast.makeText(context, text, duration);
         toast.show();
-    }
-
-    private String getAndroidID() {
-        String id = Settings.Secure.getString(getApplicationContext().getContentResolver(),
-                Settings.Secure.ANDROID_ID);
-        Log.d("android_id", id);
-        return id;
     }
 
     private void startIntentHome(){

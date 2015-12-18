@@ -9,10 +9,11 @@ public class SessionManager {
 
     public User user;
 
-    private SessionManager()
-    {
+    public final static String strikeIronUserName = "stikeironusername@yourdomain.com";
+    public final static String strikeIronPassword = "strikeironpassword";
+    public final static String apiURL = "http://ws.strikeiron.com/StrikeIron/EMV6Hygiene/VerifyEmail?";
 
-    }
+    private SessionManager(){}
 
     public static SessionManager getInstance()
     {
