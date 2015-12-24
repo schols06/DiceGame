@@ -2,21 +2,22 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.playerentity;
+package com.diceDB;
 
 import java.io.Serializable;
-import java.util.Collection;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -34,43 +35,55 @@ public class Users implements Serializable {
     @Id
     @Basic(optional = false)
     @NotNull
+    @Size(min = 1, max = 16)
     @Column(name = "ANDROID_ID")
-    private Integer androidId;
+    private String androidId;
+    @Size(max = 30)
     @Column(name = "NAME")
-    private Character name;
-    @OneToMany(mappedBy = "androidId")
-    private Collection<Scores> scoresCollection;
+    private String name;
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "users1")
+    private Users users;
+    @JoinColumn(name = "ANDROID_ID", referencedColumnName = "ANDROID_ID", insertable = false, updatable = false)
+    @OneToOne(optional = false)
+    private Users users1;
 
     public Users() {
     }
 
-    public Users(Integer androidId) {
+    public Users(String androidId) {
         this.androidId = androidId;
     }
 
-    public Integer getAndroidId() {
+    public String getAndroidId() {
         return androidId;
     }
 
-    public void setAndroidId(Integer androidId) {
+    public void setAndroidId(String androidId) {
         this.androidId = androidId;
     }
 
-    public Character getName() {
+    public String getName() {
         return name;
     }
 
-    public void setName(Character name) {
+    public void setName(String name) {
         this.name = name;
     }
 
-    @XmlTransient
-    public Collection<Scores> getScoresCollection() {
-        return scoresCollection;
+    public Users getUsers() {
+        return users;
     }
 
-    public void setScoresCollection(Collection<Scores> scoresCollection) {
-        this.scoresCollection = scoresCollection;
+    public void setUsers(Users users) {
+        this.users = users;
+    }
+
+    public Users getUsers1() {
+        return users1;
+    }
+
+    public void setUsers1(Users users1) {
+        this.users1 = users1;
     }
 
     @Override
@@ -95,7 +108,7 @@ public class Users implements Serializable {
 
     @Override
     public String toString() {
-        return "com.playerentity.Users[ androidId=" + androidId + " ]";
+        return "com.diceDB.Users[ androidId=" + androidId + " ]";
     }
     
 }

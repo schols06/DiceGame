@@ -2,9 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.playerentity.service;
+package com.diceDB.service;
 
-import com.playerentity.Scores;
+import com.diceDB.Users;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -23,53 +23,53 @@ import javax.ws.rs.Produces;
  * @author Tim
  */
 @Stateless
-@Path("com.playerentity.scores")
-public class ScoresFacadeREST extends AbstractFacade<Scores> {
+@Path("com.dicedb.users")
+public class UsersFacadeREST extends AbstractFacade<Users> {
     @PersistenceContext(unitName = "DiceServerPU")
     private EntityManager em;
 
-    public ScoresFacadeREST() {
-        super(Scores.class);
+    public UsersFacadeREST() {
+        super(Users.class);
     }
 
     @POST
     @Override
     @Consumes({"application/xml", "application/json"})
-    public void create(Scores entity) {
+    public void create(Users entity) {
         super.create(entity);
     }
 
     @PUT
     @Override
     @Consumes({"application/xml", "application/json"})
-    public void edit(Scores entity) {
+    public void edit(Users entity) {
         super.edit(entity);
     }
 
     @DELETE
     @Path("{id}")
-    public void remove(@PathParam("id") Integer id) {
+    public void remove(@PathParam("id") String id) {
         super.remove(super.find(id));
     }
 
     @GET
     @Path("{id}")
     @Produces({"application/xml", "application/json"})
-    public Scores find(@PathParam("id") Integer id) {
+    public Users find(@PathParam("id") String id) {
         return super.find(id);
     }
 
     @GET
     @Override
     @Produces({"application/xml", "application/json"})
-    public List<Scores> findAll() {
+    public List<Users> findAll() {
         return super.findAll();
     }
 
     @GET
     @Path("{from}/{to}")
     @Produces({"application/xml", "application/json"})
-    public List<Scores> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
+    public List<Users> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
         return super.findRange(new int[]{from, to});
     }
 

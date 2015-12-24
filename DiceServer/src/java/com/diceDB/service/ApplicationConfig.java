@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.playerentity.service;
+package com.diceDB.service;
 
 import java.util.Set;
 import javax.ws.rs.core.Application;
@@ -36,9 +36,8 @@ public class ApplicationConfig extends Application {
      * given list with all resources defined in the project.
      */
     private void addRestResourceClasses(Set<Class<?>> resources) {
-        resources.add(com.playerentity.service.LocationsFacadeREST.class);
-        resources.add(com.playerentity.service.ScoresFacadeREST.class);
-        resources.add(com.playerentity.service.UsersFacadeREST.class);
+        resources.add(com.diceDB.service.ScoresFacadeREST.class);
+        resources.add(com.diceDB.service.UsersFacadeREST.class);
     }
     
 }

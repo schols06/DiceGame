@@ -2,9 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.playerentity.service;
+package com.diceDB.service;
 
-import com.playerentity.Users;
+import com.diceDB.Scores;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -23,26 +23,26 @@ import javax.ws.rs.Produces;
  * @author Tim
  */
 @Stateless
-@Path("com.playerentity.users")
-public class UsersFacadeREST extends AbstractFacade<Users> {
+@Path("com.dicedb.scores")
+public class ScoresFacadeREST extends AbstractFacade<Scores> {
     @PersistenceContext(unitName = "DiceServerPU")
     private EntityManager em;
 
-    public UsersFacadeREST() {
-        super(Users.class);
+    public ScoresFacadeREST() {
+        super(Scores.class);
     }
 
     @POST
     @Override
     @Consumes({"application/xml", "application/json"})
-    public void create(Users entity) {
+    public void create(Scores entity) {
         super.create(entity);
     }
 
     @PUT
     @Override
     @Consumes({"application/xml", "application/json"})
-    public void edit(Users entity) {
+    public void edit(Scores entity) {
         super.edit(entity);
     }
 
@@ -55,21 +55,21 @@ public class UsersFacadeREST extends AbstractFacade<Users> {
     @GET
     @Path("{id}")
     @Produces({"application/xml", "application/json"})
-    public Users find(@PathParam("id") Integer id) {
+    public Scores find(@PathParam("id") Integer id) {
         return super.find(id);
     }
 
     @GET
     @Override
     @Produces({"application/xml", "application/json"})
-    public List<Users> findAll() {
+    public List<Scores> findAll() {
         return super.findAll();
     }
 
     @GET
     @Path("{from}/{to}")
     @Produces({"application/xml", "application/json"})
-    public List<Users> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
+    public List<Scores> findRange(@PathParam("from") Integer from, @PathParam("to") Integer to) {
         return super.findRange(new int[]{from, to});
     }
 

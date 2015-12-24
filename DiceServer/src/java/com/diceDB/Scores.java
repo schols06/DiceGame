@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.playerentity;
+package com.diceDB;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -10,14 +10,13 @@ import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -30,6 +29,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 @NamedQueries({
     @NamedQuery(name = "Scores.findAll", query = "SELECT s FROM Scores s"),
     @NamedQuery(name = "Scores.findByScoreId", query = "SELECT s FROM Scores s WHERE s.scoreId = :scoreId"),
+    @NamedQuery(name = "Scores.findByAndroidId", query = "SELECT s FROM Scores s WHERE s.androidId = :androidId"),
+    @NamedQuery(name = "Scores.findByLocation", query = "SELECT s FROM Scores s WHERE s.location = :location"),
     @NamedQuery(name = "Scores.findByValue", query = "SELECT s FROM Scores s WHERE s.value = :value"),
     @NamedQuery(name = "Scores.findByTimestamp", query = "SELECT s FROM Scores s WHERE s.timestamp = :timestamp")})
 public class Scores implements Serializable {
@@ -39,18 +40,18 @@ public class Scores implements Serializable {
     @NotNull
     @Column(name = "SCORE_ID")
     private Integer scoreId;
+    @Size(max = 16)
+    @Column(name = "ANDROID_ID")
+    private String androidId;
+    @Size(max = 40)
+    @Column(name = "LOCATION")
+    private String location;
     @Column(name = "VALUE")
     private Integer value;
     @Column(name = "TIMESTAMP")
-    @Temporal(TemporalType.TIME)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date timestamp;
-    @JoinColumn(name = "ANDROID_ID", referencedColumnName = "ANDROID_ID")
-    @ManyToOne
-    private Users androidId;
-    @JoinColumn(name = "LOCATION_ID", referencedColumnName = "LOCATION_ID")
-    @ManyToOne
-    private Locations locationId;
-
+    
     public Scores() {
     }
 
@@ -64,6 +65,22 @@ public class Scores implements Serializable {
 
     public void setScoreId(Integer scoreId) {
         this.scoreId = scoreId;
+    }
+
+    public String getAndroidId() {
+        return androidId;
+    }
+
+    public void setAndroidId(String androidId) {
+        this.androidId = androidId;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
     }
 
     public Integer getValue() {
@@ -80,22 +97,6 @@ public class Scores implements Serializable {
 
     public void setTimestamp(Date timestamp) {
         this.timestamp = timestamp;
-    }
-
-    public Users getAndroidId() {
-        return androidId;
-    }
-
-    public void setAndroidId(Users androidId) {
-        this.androidId = androidId;
-    }
-
-    public Locations getLocationId() {
-        return locationId;
-    }
-
-    public void setLocationId(Locations locationId) {
-        this.locationId = locationId;
     }
 
     @Override
@@ -120,7 +121,7 @@ public class Scores implements Serializable {
 
     @Override
     public String toString() {
-        return "com.playerentity.Scores[ scoreId=" + scoreId + " ]";
+        return "com.diceDB.Scores[ scoreId=" + scoreId + " ]";
     }
     
 }
