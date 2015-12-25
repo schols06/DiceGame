@@ -37,6 +37,8 @@ public class ScoresFacadeREST extends AbstractFacade<Scores> {
     @Override
     @Consumes({"application/xml", "application/json"})
     public void create(Scores entity) {
+        // Initialize returnMessage
+        String returnMessage = null;
         // Create query wich searches for a excisting score of an androidId and location.
         Query q = em.createQuery("SELECT s.value FROM Scores s WHERE s.androidId = :androidId AND s.location = :location");
         // Set paramaters from JSON post.
@@ -48,6 +50,8 @@ public class ScoresFacadeREST extends AbstractFacade<Scores> {
             // No excisting score is found, create a new score.
             System.out.println("Nothing found, create new score.");
             super.create(entity);
+            // Set returnMessage
+            returnMessage = "true";
         } else {
             // There is a score with user and location.
             // Convert object (the old score) to int and set variable from database.
@@ -67,12 +71,18 @@ public class ScoresFacadeREST extends AbstractFacade<Scores> {
                 System.out.println("Database is update on location " + entity.getLocation()
                         + " with score " + newValue + " for "
                         + "androidId " + entity.getAndroidId());
+                // Set returnMessage
+                returnMessage = "true";
             } else {
                 // New score is lower or same.
                 System.out.println("Nothin happens, new score is lower or same as "
                         + "score in database.");
+                // Set returnMessage
+                returnMessage = "false";
             }
         }
+        System.out.println("Return message: " + returnMessage);
+//        return returnMessage;
     }
 
     @PUT
