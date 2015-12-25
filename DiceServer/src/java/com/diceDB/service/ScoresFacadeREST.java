@@ -9,6 +9,7 @@ import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -36,7 +37,42 @@ public class ScoresFacadeREST extends AbstractFacade<Scores> {
     @Override
     @Consumes({"application/xml", "application/json"})
     public void create(Scores entity) {
-        super.create(entity);
+        // Create query wich searches for a excisting score of an androidId and location.
+        Query q = em.createQuery("SELECT s.value FROM Scores s WHERE s.androidId = :androidId AND s.location = :location");
+        // Set paramaters from JSON post.
+        q.setParameter("androidId", entity.getAndroidId());
+        q.setParameter("location", entity.getLocation());
+        // Set boolean to check if there is a result.
+        boolean result = (q.getResultList().isEmpty());
+        if (result) {
+            // No excisting score is found, create a new score.
+            System.out.println("Nothing found, create new score.");
+            super.create(entity);
+        } else {
+            // There is a score with user and location.
+            // Convert object (the old score) to int and set variable from database.
+            int oldValue = (int) q.getSingleResult();
+            // Set variable newValue from entity.
+            int newValue = entity.getValue();
+            // Print new value and androidId.
+            System.out.println("A new score is found: " + newValue + " for androidId: "
+                    + entity.getAndroidId());
+            // Check if the new score is higher than the one in the database.
+            if (newValue > oldValue) {
+                // New score is higher.
+                System.out.println("The new score: " + newValue + ", is higher than "
+                        + "the one in the database: " + oldValue);
+                // Update score.
+                super.edit(entity);
+                System.out.println("Database is update on location " + entity.getLocation()
+                        + " with score " + newValue + " for "
+                        + "androidId " + entity.getAndroidId());
+            } else {
+                // New score is lower or same.
+                System.out.println("Nothin happens, new score is lower or same as "
+                        + "score in database.");
+            }
+        }
     }
 
     @PUT

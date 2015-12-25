@@ -51,7 +51,7 @@ public class Scores implements Serializable {
     @Column(name = "TIMESTAMP")
     @Temporal(TemporalType.TIMESTAMP)
     private Date timestamp;
-    
+
     public Scores() {
     }
 
