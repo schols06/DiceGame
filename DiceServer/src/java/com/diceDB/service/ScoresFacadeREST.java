@@ -59,7 +59,7 @@ public class ScoresFacadeREST extends AbstractFacade<Scores> {
             // Set variable newValue from entity.
             int newValue = entity.getValue();
             // Print new value and androidId.
-            System.out.println("A new score is found: " + newValue + " for androidId: "
+            System.out.println("A new score is posted: " + newValue + " for androidId: "
                     + entity.getAndroidId());
             // Check if the new score is higher than the one in the database.
             if (newValue > oldValue) {
@@ -75,7 +75,7 @@ public class ScoresFacadeREST extends AbstractFacade<Scores> {
                 returnMessage = "true";
             } else {
                 // New score is lower or same.
-                System.out.println("Nothin happens, new score is lower or same as "
+                System.out.println("Nothing happens, new score is lower or same as "
                         + "score in database.");
                 // Set returnMessage
                 returnMessage = "false";
