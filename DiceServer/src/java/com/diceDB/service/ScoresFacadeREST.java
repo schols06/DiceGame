@@ -99,10 +99,16 @@ public class ScoresFacadeREST extends AbstractFacade<Scores> {
     }
 
     @GET
-    @Path("{id}")
+    @Path("{androidId}")
     @Produces({"application/xml", "application/json"})
-    public Scores find(@PathParam("id") Integer id) {
-        return super.find(id);
+    public Scores find(@PathParam("androidId") String androidId) {
+        Query q = em.createQuery("SELECT * FROM SCORES WHERE ANDROID_ID = "
+                + "CHAR(123) ORDER BY VALUE DESC");
+        // Derby ondersteunt geen LIMIT functie!!!
+        // Zelf iets omheen bouwen.
+        q.setParameter("androidId", androidId);
+        List<Scores> results = q.getResultList();
+        return results;
     }
 
     @GET
