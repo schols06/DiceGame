@@ -18,6 +18,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Response;
 
 /**
  *
@@ -32,13 +33,14 @@ public class ScoresFacadeREST extends AbstractFacade<Scores> {
     public ScoresFacadeREST() {
         super(Scores.class);
     }
-
+    
     @POST
     @Override
     @Consumes({"application/xml", "application/json"})
-    public void create(Scores entity) {
-        // Initialize returnMessage
-        String returnMessage = null;
+    public Response createCustom(Scores entity) {
+        System.out.println("Hier is ie");
+        // Initialize response
+        Response response;
         // Create query wich searches for a excisting score of an androidId and location.
         Query q = em.createQuery("SELECT s.value FROM Scores s WHERE s.androidId = :androidId AND s.location = :location");
         // Set paramaters from JSON post.
@@ -50,8 +52,8 @@ public class ScoresFacadeREST extends AbstractFacade<Scores> {
             // No excisting score is found, create a new score.
             System.out.println("Nothing found, create new score.");
             super.create(entity);
-            // Set returnMessage
-            returnMessage = "true";
+            // Set response
+            response = Response.status(Response.Status.CREATED).build();
         } else {
             // There is a score with user and location.
             // Convert object (the old score) to int and set variable from database.
@@ -71,18 +73,19 @@ public class ScoresFacadeREST extends AbstractFacade<Scores> {
                 System.out.println("Database is update on location " + entity.getLocation()
                         + " with score " + newValue + " for "
                         + "androidId " + entity.getAndroidId());
-                // Set returnMessage
-                returnMessage = "true";
+                // Set response
+                response = Response.status(Response.Status.CREATED).build();
             } else {
                 // New score is lower or same.
                 System.out.println("Nothing happens, new score is lower or same as "
                         + "score in database.");
-                // Set returnMessage
-                returnMessage = "false";
+                // Set response
+                response = Response.status(Response.Status.OK).build();
             }
         }
-        System.out.println("Return message: " + returnMessage);
-//        return returnMessage;
+        // Return the response code
+        System.out.println("Return message: " + response);
+        return response;
     }
 
     @PUT
@@ -98,18 +101,26 @@ public class ScoresFacadeREST extends AbstractFacade<Scores> {
         super.remove(super.find(id));
     }
 
-    @GET
-    @Path("{androidId}")
+        @GET
+    @Path("{id}")
     @Produces({"application/xml", "application/json"})
-    public Scores find(@PathParam("androidId") String androidId) {
-        Query q = em.createQuery("SELECT * FROM SCORES WHERE ANDROID_ID = "
-                + "CHAR(123) ORDER BY VALUE DESC");
-        // Derby ondersteunt geen LIMIT functie!!!
-        // Zelf iets omheen bouwen.
-        q.setParameter("androidId", androidId);
-        List<Scores> results = q.getResultList();
-        return results;
+    public Scores find(@PathParam("id") Integer id) {
+        return super.find(id);
     }
+
+    
+//    @GET
+//    @Path("{androidId}")
+//    @Produces({"application/xml", "application/json"})
+//    public Scores find(@PathParam("androidId") String androidId) {
+//        Query q = em.createQuery("SELECT * FROM SCORES WHERE ANDROID_ID = "
+//                + "CHAR(123) ORDER BY VALUE DESC");
+//        // Derby ondersteunt geen LIMIT functie!!!
+//        // Zelf iets omheen bouwen.
+//        q.setParameter("androidId", androidId);
+//        List<Scores> results = q.getResultList();
+////        return results;
+//    }
 
     @GET
     @Override
