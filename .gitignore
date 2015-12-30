@@ -27,3 +27,4 @@ proguard/
 *.log
 /DiceServer/nbproject/private/
 /DiceServer/dist/
+DiceGameClient/.idea/gradle.xml
