@@ -8,7 +8,7 @@
     <string name="GPSAlertDialogTitle">Hello world!</string>
     <string name="GPSAlertDialogMessage">Hello world!</string>
     <string name="cancel">Hello world!</string>
-    <string name="ip_example">123.456.789.1</string>
+    <string name="ip_example">192.168.0.23</string>
     <string name="connect">Connect</string>
     <string name="enter_ip_hint">Enter Server IP Address:</string>
     <string name="title_activity_register">RegisterActivity</string>

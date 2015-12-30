@@ -1,5 +1,6 @@
 package com.example.dicegameclient;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
@@ -10,7 +11,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
@@ -19,6 +22,21 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        EditText editText = (EditText)findViewById(R.id.input_ip);
+
+        editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    hideKeyboard(v);
+                }
+            }
+        });
+    }
+
+    public void hideKeyboard(View view) {
+        InputMethodManager inputMethodManager =(InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
     @Override
@@ -55,20 +73,32 @@ public class MainActivity extends AppCompatActivity {
 
         //Fetch the info (android id)
         User user = getUser();
-        user.setServerIP(ip);
+        SessionManager.getInstance().setIP(ip);
         // cache the user in the sessionManager
         SessionManager.getInstance().user = user;
+
+        System.out.println("Hoi");
+        // Check if the user exists already by calling the api
+        if(ip != null && !user.isValid()) {
+
+            String urlString = SessionManager.getInstance().getUrlScores();
+            System.out.println("execute: " + urlString);
+            new APIManager().execute(urlString);
+            if(!SessionManager.getInstance().result.isEmpty()){
+                Log.d("User", "User registration required");
+                startIntentRegister();
+            }
+        }
+
         //If we were able to fetch user info
         if(user != null && user.isValid()){
             Log.d("user: ", user.toString());
-
-
             // Go to next screen
             startIntentHome();
-        }else{
-            Log.d("User", "User registration required");
-            startIntentRegister();
         }
+
+
+
     }
 
     public String getInputIP(){

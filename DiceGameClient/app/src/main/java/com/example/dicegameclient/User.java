@@ -9,7 +9,6 @@ import android.provider.Settings;
 public class User {
     private String id;
     private String name;
-    private String serverIP;
 
     public String getId(Application application){
         if(id != null){
@@ -42,42 +41,22 @@ public class User {
         }
     }
 
-    public String getServerIP(){
-        if(serverIP != null){
-            return serverIP;
-        }else{
-            return serverIP = "null";
-        }
-    }
-
-    public void setServerIP(String ip){
-        //TODO: Check if ip is valid?
-        if(ip != null) {
-            this.serverIP = ip;
-        }else{
-            System.out.println("Value is invalid.");
-        }
-    }
-
     public User(Application application){
         this.id = Settings.Secure.getString(application.getApplicationContext().getContentResolver(),
                 Settings.Secure.ANDROID_ID);
         name = "Enter a name";
-        serverIP = "localhost";
     }
 
     public User(String name, Application application){
         this.id = Settings.Secure.getString(application.getApplicationContext().getContentResolver(),
                 Settings.Secure.ANDROID_ID);
         this.name = name;
-        serverIP = "localhost";
     }
 
     public User(String name, String ip, Application application){
         this.id = Settings.Secure.getString(application.getApplicationContext().getContentResolver(),
                 Settings.Secure.ANDROID_ID);
         this.name = name;
-        serverIP = ip;
     }
 
     public boolean isValid(){
