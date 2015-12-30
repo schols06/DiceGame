@@ -6,6 +6,7 @@ package com.diceDB.service;
 
 import java.util.List;
 import javax.persistence.EntityManager;
+import javax.ws.rs.core.Response;
 
 /**
  *
@@ -22,6 +23,11 @@ public abstract class AbstractFacade<T> {
 
     public void create(T entity) {
         getEntityManager().persist(entity);
+    }
+    
+    public Response createCustom(T entity) {
+        getEntityManager().persist(entity);
+        return Response.status(Response.Status.CREATED).build();
     }
 
     public void edit(T entity) {
