@@ -5,19 +5,20 @@
 package com.diceDB;
 
 import java.io.Serializable;
+import java.util.Collection;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -41,11 +42,8 @@ public class Users implements Serializable {
     @Size(max = 30)
     @Column(name = "NAME")
     private String name;
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "users1")
-    private Users users;
-    @JoinColumn(name = "ANDROID_ID", referencedColumnName = "ANDROID_ID", insertable = false, updatable = false)
-    @OneToOne(optional = false)
-    private Users users1;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "androidId")
+    private Collection<Scores> scoresCollection;
 
     public Users() {
     }
@@ -70,20 +68,13 @@ public class Users implements Serializable {
         this.name = name;
     }
 
-    public Users getUsers() {
-        return users;
+    @XmlTransient
+    public Collection<Scores> getScoresCollection() {
+        return scoresCollection;
     }
 
-    public void setUsers(Users users) {
-        this.users = users;
-    }
-
-    public Users getUsers1() {
-        return users1;
-    }
-
-    public void setUsers1(Users users1) {
-        this.users1 = users1;
+    public void setScoresCollection(Collection<Scores> scoresCollection) {
+        this.scoresCollection = scoresCollection;
     }
 
     @Override
