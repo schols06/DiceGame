@@ -53,28 +53,6 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
     private long mLastForce;
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_game, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
     public final void onAccuracyChanged(Sensor sensor, int accuracy) {
         // Do something here if sensor accuracy changes.
     }
@@ -203,6 +181,8 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
         } else {
             Log.d("location_error", "Location not available");
         }
+
+        System.out.println(SessionManager.getInstance().user.toString());
     }
 
     public int getRandomNumber(int max){

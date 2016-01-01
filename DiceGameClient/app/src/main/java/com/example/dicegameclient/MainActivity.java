@@ -4,7 +4,11 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -16,6 +20,15 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -23,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         EditText editText = (EditText)findViewById(R.id.input_ip);
-
         editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
@@ -39,28 +51,6 @@ public class MainActivity extends AppCompatActivity {
         inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
     /**
      * onSubmit. Called when the user presses the submit button.
      * Used to register the user in the database
@@ -68,38 +58,85 @@ public class MainActivity extends AppCompatActivity {
      * @return void
      */
     public void onSubmit(View view) {
-        // TODO: Check the ip that was entered and try to make a call
+        // Get the ip the user has entered.
         String ip = getInputIP();
+        // Set the server we are connecting to.
+        APIManager.getInstance().setIP(ip);
 
-        //Fetch the info (android id)
+        // Fetch the users info (android id).
         User user = getUser();
-        SessionManager.getInstance().setIP(ip);
         // cache the user in the sessionManager
         SessionManager.getInstance().user = user;
 
-        System.out.println("Hoi");
-        // Check if the user exists already by calling the api
+        // If the user has entered an ip, and the user is not valid (Valid checks if the name is not the default name)
         if(ip != null && !user.isValid()) {
-
-            String urlString = SessionManager.getInstance().getUrlScores();
-            System.out.println("execute: " + urlString);
-            new APIManager().execute(urlString);
-            if(!SessionManager.getInstance().result.isEmpty()){
-                Log.d("User", "User registration required");
-                startIntentRegister();
+            //final String androidId = user.getId(getApplication());
+            String params = user.getId(getApplication());
+            // If we have internet
+            if(APIManager.getInstance().hasInternetConnection(this)){
+                new GetUserTask().execute(params);
+            }else{
+                //TODO: Inform the user that he/she needs to have an active internet connection.
             }
         }
-
-        //If we were able to fetch user info
-        if(user != null && user.isValid()){
-            Log.d("user: ", user.toString());
-            // Go to next screen
-            startIntentHome();
-        }
-
-
-
     }
+
+    private class GetUserTask extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... params) {
+
+            // params comes from the execute() call: params[0] is the url.
+            try {
+                return APIManager.getInstance().getUser(params[0].toString()).toString();
+            } catch (IOException e) {
+                return "Unable to retrieve data. URL may be invalid.";
+            }
+        }
+        // onPostExecute displays the results of the AsyncTask.
+        @Override
+        protected void onPostExecute(String result) {
+            try {
+                setUser(new JSONObject(result));
+                User user = SessionManager.getInstance().user;
+                //If we were able to fetch user info
+                if(user != null && user.isValid()){
+                    Log.d("user: ", user.toString());
+                    // Go to next screen
+                    showToast("Welcome back " + user.getName());
+                    startIntentHome();
+                }else{
+                    startIntentRegister();
+                }
+            }catch(Exception e){
+                Log.d("JSONObject", e.toString());
+            }
+        }
+    }
+
+
+    private void setUser(JSONObject obj){
+        //Double check if the id is the same
+        String id = "";
+        String name = "";
+        try{
+            id = obj.getString("androidId");
+            name = obj.getString("name");
+        }catch(Exception e){
+            Log.d("JSONObject", e.toString());
+        }
+        if(!id.isEmpty() && !name.isEmpty()){
+            if(id.equalsIgnoreCase(SessionManager.getInstance().user.getId())){
+                // ID checks out, name is not empty, so we set the name of the user
+                SessionManager.getInstance().user.setName(name);
+            }else{
+                System.out.println("id: " + id + ", does not match id: " + SessionManager.getInstance().user.getId());
+            }
+        }else{
+            System.out.println("id or name empty");
+        }
+    }
+
+
 
     public String getInputIP(){
         // Get text

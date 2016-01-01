@@ -2,13 +2,19 @@ package com.example.dicegameclient;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import org.json.JSONObject;
+
+import java.io.IOException;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -44,12 +50,38 @@ public class RegisterActivity extends AppCompatActivity {
         String username = getInputString();
         // Let the user class check if this is a valid username
         if(SessionManager.getInstance().user.isValid(username)){
-            // cache the user in the sessionManager
-            SessionManager.getInstance().user.setName(username);
-            startIntentPlay();
+            if(APIManager.getInstance().hasInternetConnection(this)){
+                new SetUserTask().execute(username);
+            }else{
+                //TODO: Inform the user that registering somehow failed?.
+            }
         }else{
             // Inform the user and try again.
             showToast("Invalid username");
+        }
+    }
+
+    private class SetUserTask extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... params) {
+
+            // params comes from the execute() call: params[0] is the url.
+            try {
+                String userName = params[0].toString();
+                APIManager.getInstance().setUser(userName);
+                return userName;
+            } catch (Exception e) {
+                return "Unable to retrieve data. URL may be invalid.";
+            }
+        }
+        // onPostExecute displays the results of the AsyncTask.
+        @Override
+        protected void onPostExecute(String result) {
+            try {
+                System.out.println("Result:" + result);
+            }catch(Exception e){
+                Log.d("JSONObject", e.toString());
+            }
         }
     }
 

@@ -1,116 +1,147 @@
 package com.example.dicegameclient;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.pm.PackageInstaller;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.util.Log;
 
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlPullParserFactory;
+import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-
 /**
  * Created by Luc on 18-12-2015.
  */
-public class APIManager extends AsyncTask<String, String, String> {
-    @Override
-    protected String doInBackground(String... params) {
-        String urlString=params[0];
-        String resultToDisplay;
-        scoreResult result = null;
-        InputStream in = null;
+public class APIManager {
 
-        // HTTP Get
+    private static final String DICE_GAME_GET_USER_API = ":8080/DiceTestServer/webresources/entities.users/";
+    private static final String DICE_GAME_SET_USER_API = ":8080/DiceTestServer/webresources/entities.users";
+
+    private APIManager(){}
+    private static APIManager _instance;
+    public static APIManager getInstance()
+    {
+        if (_instance == null)
+        {
+            _instance = new APIManager();
+        }
+        return _instance;
+    }
+
+    private String ip = "http://";
+
+    public void setIP(String serverIP){
+        ip = "http://" + serverIP;
+    }
+
+    public boolean hasInternetConnection(Activity activity){
+        ConnectivityManager connMgr = (ConnectivityManager)activity.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected()) {
+            return true;
+        }
+        System.out.println("No network connection available.");
+        return false;
+    }
+
+
+
+    // Given a URL, establishes an HttpUrlConnection and retrieves
+    // the JSON content as a InputStream, which it returns as
+    // a JSONObject.
+    public JSONObject getUser(String userId) throws IOException {
+        InputStream is = null;
         try {
-            URL url = new URL(urlString);
-            System.out.println("URL: " + url.toString());
-            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            in = new BufferedInputStream(urlConnection.getInputStream());
-        } catch (Exception e ) {
-            System.out.println(e.getMessage());
-            return e.getMessage();
+            URL url = new URL(ip + DICE_GAME_GET_USER_API + userId);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setReadTimeout(10000 /* milliseconds */);
+            conn.setConnectTimeout(15000 /* milliseconds */);
+            conn.setRequestMethod("GET");
+            conn.setDoInput(true);
+            // Starts the query
+            conn.connect();
+            int response = conn.getResponseCode();
+            Log.d("Debug", "The response is: " + response);
+            is = conn.getInputStream();
+
+            Reader reader = null;
+            reader = new InputStreamReader(is, "UTF-8");
+            // Create a char array, that can hold a max of 512 characters
+            char[] buffer = new char[512];
+            reader.read(buffer);
+            String temp = new String(buffer);
+            // Convert the InputStream into a string
+            JSONObject data = new JSONObject(temp);
+            System.out.println("Get User: " + data.toString());
+            return data;
+        }catch(Exception e){
+            return null;
+        } finally {
+            // Makes sure that the InputStream is closed after the app is
+            // finished using it.
+            if (is != null) {
+                is.close();
+            }
         }
+    }
 
-        // Parse XML
-        XmlPullParserFactory pullParserFactory;
-
+    public void setUser(String name){
+        URL url;
+        HttpURLConnection urlConnection = null;
         try {
-            pullParserFactory = XmlPullParserFactory.newInstance();
-            XmlPullParser parser = pullParserFactory.newPullParser();
+            url = new URL(ip + DICE_GAME_SET_USER_API.toString() + "/");
+            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setDoOutput(true);
+            urlConnection.setChunkedStreamingMode(0);
 
-            parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
-            parser.setInput(in, null);
-            result = parseXML(parser);
-        } catch (XmlPullParserException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            urlConnection.setRequestMethod("POST");
+            urlConnection.setRequestProperty("Content-Type", "application/json");
+
+            JSONObject json = new JSONObject();
+            SessionManager.getInstance().user.setName(name);
+            json.put("androidId", SessionManager.getInstance().user.getId().toString());
+            json.put("name", SessionManager.getInstance().user.getName().toString());
+
+            String input = json.toString();
+
+            OutputStream os = urlConnection.getOutputStream();
+            os.write(input.getBytes());
+            os.flush();
+
+            InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+            String temp = readStream(in);
+            System.out.println("Temp: " + temp);
+
         }
-
-        // Simple logic to determine if the email is dangerous, invalid, or valid
-        if (result != null ) {
-            resultToDisplay = result.toString();
-            System.out.println("Result APIManager: " + resultToDisplay);
-
+        catch(Exception e){
+            Log.d("SetUser", e.toString());
         }
-        else {
-            resultToDisplay = "Exception Occured";
+        finally {
+            urlConnection.disconnect();
         }
-
-        return resultToDisplay;
     }
 
-    protected void onPostExecute(String result) {
 
-        SessionManager.getInstance().result = result;
-        System.out.println("Result: " + result);
+    private String readStream(InputStream is) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        BufferedReader r = new BufferedReader(new InputStreamReader(is),1000);
+        for (String line = r.readLine(); line != null; line =r.readLine()){
+            sb.append(line);
+        }
+        is.close();
+        return sb.toString();
     }
 
-    private scoreResult parseXML( XmlPullParser parser ) throws XmlPullParserException, IOException {
-
-        int eventType = parser.getEventType();
-        scoreResult result = new scoreResult();
-
-        while( eventType!= XmlPullParser.END_DOCUMENT) {
-            String name = null;
-
-            switch(eventType)
-            {
-                case XmlPullParser.START_TAG:
-                    name = parser.getName();
-
-                    if( name.equals("Error")) {
-                        System.out.println("Web API Error!");
-                    }
-                    else if ( name.equals("scoreId")) {
-                        result.scoreId = parser.nextText();
-                    }
-                    else if ( name.equals("androidId")) {
-                        result.androidId = parser.nextText();
-                    }
-                    else if ( name.equals("location")) {
-                        result.location = parser.nextText();
-                    }
-                    else if ( name.equals("value")) {
-                        result.value = parser.nextText();
-                    }
-                    else if ( name.equals("timestamp")) {
-                        result.timestamp = parser.nextText();
-                    }
-
-                    break;
-
-                case XmlPullParser.END_TAG:
-                    break;
-            } // end switch
-
-            eventType = parser.next();
-        } // end while
-
-        return result;
-    }
-
-} // end CallAPI
+}

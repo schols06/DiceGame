@@ -9,6 +9,16 @@ import android.provider.Settings;
 public class User {
     private String id;
     private String name;
+    private boolean isValid = false;
+
+
+    public String getId(){
+        if(id != null){
+            return id;
+        }else{
+            return null;
+        }
+    }
 
     public String getId(Application application){
         if(id != null){
@@ -22,6 +32,10 @@ public class User {
     private void setId(Application application){
         this.id = Settings.Secure.getString(application.getApplicationContext().getContentResolver(),
                 Settings.Secure.ANDROID_ID);
+    }
+
+    public boolean getIsValid(){
+        return isValid;
     }
 
     public String getName(){
@@ -76,6 +90,7 @@ public class User {
 
 
             // We passed the checks and the name is not empty or null, return true
+            isValid = true;
             return true;
         }
         return false;
