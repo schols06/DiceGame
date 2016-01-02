@@ -21,6 +21,8 @@ public class SessionManager {
         return _instance;
     }
 
+    public int lastResponse = -1;
+
     public User user = null;
 
 

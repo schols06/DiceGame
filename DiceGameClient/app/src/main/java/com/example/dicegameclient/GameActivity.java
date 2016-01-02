@@ -13,6 +13,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
@@ -98,8 +99,60 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
 
     public void onShake(){
         int score = getRandomNumber(MAX_SCORE);
+
+        // Get the location, which we cached in the user' score variable
+        String location = SessionManager.getInstance().user.lastScore.location;
+
+        SessionManager.getInstance().user.lastScore.setScore(score, location);
+
+        // Display the score to the user
         setScoreString("" + score);
         showToast("You rolled " + score + "!");
+
+        // Send the score to the server
+        submitScore( SessionManager.getInstance().user.lastScore);
+    }
+
+    private void submitScore(Score score){
+        if(APIManager.getInstance().hasInternetConnection(this)){
+            new SetUserScoreTask().execute("");
+        }
+        //TODO: Inform the user that registering somehow failed?.
+    }
+
+    private class SetUserScoreTask extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... params) {
+
+            // params comes from the execute() call: params[0] is the url.
+            try {
+                APIManager.getInstance().setScore();
+                return Integer.toString(SessionManager.getInstance().user.lastScore.lastResponse);
+            } catch (Exception e) {
+                return "Unable to retrieve data. URL may be invalid.";
+            }
+        }
+        // onPostExecute displays the results of the AsyncTask.
+        @Override
+        protected void onPostExecute(String result) {
+            try {
+                System.out.println("Result:" + result);
+                int response = -1;
+
+                try {
+                    response = Integer.parseInt(result);
+                } catch(NumberFormatException nfe) {
+                    System.out.println("Could not parse " + nfe);
+                }
+                if(response == 201){
+                    showToast("You broke the highscore!");
+                }else{
+                    showToast("Try again...");
+                }
+            }catch(Exception e){
+                Log.d("JSONObject", e.toString());
+            }
+        }
     }
 
     @Override
@@ -253,6 +306,7 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
 
         if(ad != null){
             setLocationString(ad);
+            SessionManager.getInstance().user.lastScore.location = ad;
         }
     }
 

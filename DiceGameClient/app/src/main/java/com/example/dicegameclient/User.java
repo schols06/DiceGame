@@ -9,6 +9,7 @@ import android.provider.Settings;
 public class User {
     private String id;
     private String name;
+    public Score lastScore;
     private boolean isValid = false;
 
 
@@ -59,18 +60,7 @@ public class User {
         this.id = Settings.Secure.getString(application.getApplicationContext().getContentResolver(),
                 Settings.Secure.ANDROID_ID);
         name = "Enter a name";
-    }
-
-    public User(String name, Application application){
-        this.id = Settings.Secure.getString(application.getApplicationContext().getContentResolver(),
-                Settings.Secure.ANDROID_ID);
-        this.name = name;
-    }
-
-    public User(String name, String ip, Application application){
-        this.id = Settings.Secure.getString(application.getApplicationContext().getContentResolver(),
-                Settings.Secure.ANDROID_ID);
-        this.name = name;
+        lastScore = new Score();
     }
 
     public boolean isValid(){

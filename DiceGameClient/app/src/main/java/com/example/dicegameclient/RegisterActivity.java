@@ -79,6 +79,11 @@ public class RegisterActivity extends AppCompatActivity {
         protected void onPostExecute(String result) {
             try {
                 System.out.println("Result:" + result);
+                String tempName = SessionManager.getInstance().user.getName();
+                if(result.equalsIgnoreCase(tempName)){
+                    startIntentPlay();
+                    showToast("Welcome " + tempName);
+                }
             }catch(Exception e){
                 Log.d("JSONObject", e.toString());
             }
