@@ -5,6 +5,7 @@
 package com.diceDB.service;
 
 import com.diceDB.Scores;
+import com.diceDB.Users;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -50,9 +51,9 @@ public class ScoresFacadeREST extends AbstractFacade<Scores> {
         q.setMaxResults(1);
         // Debugging
         System.out.println("Query: " + q);
-        System.out.println("Query: " + entity.getAndroidId());
-        System.out.println("Query: " + entity.getLocation());
-        System.out.println("Resultlist: " + q.getResultList());
+        System.out.println("Entity androidId: " + entity.getAndroidId());
+        System.out.println("Entity location: " + entity.getLocation());
+        System.out.println("Query resultlist: " + q.getResultList());
         // Set boolean to check if there is a result.
         boolean result = (q.getResultList().isEmpty());
         if (result) {
@@ -76,6 +77,16 @@ public class ScoresFacadeREST extends AbstractFacade<Scores> {
                 // New score is higher.
                 System.out.println("The new score: " + newValue + ", is higher than "
                         + "the one in the database: " + oldValue);
+                // Build query to search for scoreId
+                Query r = em.createQuery("SELECT s.scoreId FROM Scores s WHERE s.androidId = :androidId AND s.location = :location ORDER BY s.value DESC");
+                // Set paramaters from JSON post.
+                r.setParameter("androidId", entity.getAndroidId());
+                r.setParameter("location", entity.getLocation());
+                // Get the scoreId and set in variable.
+                int oldScoreId = (int) r.getResultList().get(0);
+                System.out.println("oldScoreId: " + oldScoreId);
+                // Set scoreId in entity for updating the proper row.
+                entity.setScoreId(oldScoreId);
                 // Update score.
                 super.edit(entity);
                 System.out.println("Database is update on location " + entity.getLocation()
@@ -109,19 +120,35 @@ public class ScoresFacadeREST extends AbstractFacade<Scores> {
         super.remove(super.find(id));
     }
     
-//    @GET
-//    @Path("{androidId}")
-//    @Produces({"application/json"})
-//    public Scores findByAndroidId(@PathParam("androidId") String androidId) {
-////        Query q = em.createQuery("SELECT * FROM SCORES WHERE ANDROID_ID = "
-////                + "CHAR(123) ORDER BY VALUE DESC");
-////        // Derby ondersteunt geen LIMIT functie!!!
-////        // Zelf iets omheen bouwen.
-////        q.setParameter("androidId", androidId);
-////        List<Scores> results = q.getResultList();
-////        return results;
-//        return super.find(androidId);
-//    }
+    @GET
+    @Path("/androidId/{androidId}")
+    @Produces({"application/json"})
+    public List<Scores> findByAndroidId(@PathParam("androidId") Users androidId) {
+        System.out.println("Doing a get of 10 highest scores for androidId " 
+                + androidId);
+        Query q = em.createQuery("SELECT s.value, s.location FROM Scores s WHERE s.androidId = :androidId ORDER BY s.value DESC");
+        // Set maximum results to 10.
+        q.setMaxResults(10);
+        q.setParameter("androidId", androidId);
+        System.out.println("Query: " + q);
+        List<Scores> results = q.getResultList();
+        return results;
+    }
+    
+    @GET
+    @Path("/location/{location}")
+    @Produces({"application/json"})
+    public List<Scores> findByAndroidId(@PathParam("location") String location) {
+        System.out.println("Doing a get of 10 highest scores for location: " 
+                + location);
+        Query q = em.createQuery("SELECT s.value, s.androidId.name FROM Scores s WHERE s.location = :location ORDER BY s.value DESC");
+        // Set maximum results to 10.
+        q.setMaxResults(10);
+        q.setParameter("location", location);
+        System.out.println("Query: " + q);
+        List<Scores> results = q.getResultList();
+        return results;
+    }
     
     @GET
     @Path("{id}")
