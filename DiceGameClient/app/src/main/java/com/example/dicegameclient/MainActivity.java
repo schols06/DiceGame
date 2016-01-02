@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
             if(APIManager.getInstance().hasInternetConnection(this)){
                 new GetUserTask().execute(userId);
             }else{
-                //TODO: Inform the user that he/she needs to have an active internet connection.
+                showToast("Active internet connection required...");
             }
         }
     }
@@ -74,12 +74,16 @@ public class MainActivity extends AppCompatActivity {
     private class GetUserTask extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... params) {
-
-            // params comes from the execute() call: params[0] is the url.
             try {
-                if(APIManager.getInstance() == null ) { System.out.println("Instance == null"); }
-                if(params == null ) { System.out.println("Params == null"); }
-                if(params[0] == null ) { System.out.println("Params[0] == null"); }
+                if(APIManager.getInstance() == null ) {
+                    System.out.println("Instance == null");
+                }
+                if(params == null ) {
+                    System.out.println("Params == null");
+                }
+                if(params[0] == null ) {
+                    System.out.println("Params[0] == null");
+                }
                 return APIManager.getInstance().getUser(params[0]).toString();
             } catch (Exception e) {
                 System.out.println("Exception occured: " + e);
@@ -90,22 +94,22 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String result) {
             try {
-                System.out.println("Result is: " + result);
+                // set the user object and return the statuscode
                 int succes = setUser(new JSONObject(result));
+                // Then retrieve the user we've just set, and cache it in a local variable.
                 User user = SessionManager.getInstance().user;
-                //If we were able to fetch user info
-                System.out.println("Succes: " + succes);
+                //If we were able to fetch user info, and the user is valid (& not null)
                 if(succes == 200 && user != null && user.isValid()){
-                    Log.d("user: ", user.toString());
-                    // Go to next screen
+                    // Go to next screen and welcome the user back
                     showToast("Welcome back " + user.getName());
                     startIntentHome();
                 }else if(succes == 204){
+                    // Else if statuscode 204, make the user register
                     startIntentRegister();
                 }else{
+                    // Else inform the user
                     showToast("Server could be offline, please try again...");
                 }
-
             }catch(Exception e){
                 Log.d("JSONObject_PostExecute", e.toString());
             }

@@ -54,11 +54,12 @@ public class APIManager {
         return false;
     }
 
-
-
-    // Given a URL, establishes an HttpUrlConnection and retrieves
-    // the JSON content as a InputStream, which it returns as
-    // a JSONObject.
+    /**
+     * getUser. Tries to get the user from the backend and returns a JSONObject of the user' info if found.
+     * @param userId. The user' id we're looking for
+     * @return JSONObject. The JSONObject containing the user' info
+     * @throws IOException Incase the JSONObject could not be created, exception might be thrown.
+     */
     public JSONObject getUser(String userId) throws IOException {
         InputStream is = null;
         try {
@@ -68,26 +69,36 @@ public class APIManager {
             conn.setConnectTimeout(15000 /* milliseconds */);
             conn.setRequestMethod("GET");
             conn.setDoInput(true);
-            // Starts the query
+
+            // Connect
             conn.connect();
+
+            // Get the response code and store it in our sessionManager for later reference.
             int response = conn.getResponseCode();
             Log.d("Debug", "The response is: " + response);
             SessionManager.getInstance().lastResponse = response;
+
+            // Get the inputStream
             is = conn.getInputStream();
 
+            // And read the inputStream
             Reader reader = null;
             reader = new InputStreamReader(is, "UTF-8");
             // Create a char array, that can hold a max of 512 characters
             char[] buffer = new char[512];
             reader.read(buffer);
+
+            // Cast/cache it in a string.
             String temp = new String(buffer);
 
-            // Convert the InputStream into a string
+            // Convert the String into a JSONObject
             JSONObject data = new JSONObject(temp);
             System.out.println("Get User: " + data.toString());
 
+            // And close the connection when we're done.
             conn.disconnect();
 
+            // And return the JSONObject.
             return data;
         }catch(Exception e){
             return new JSONObject();
@@ -108,7 +119,6 @@ public class APIManager {
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setDoOutput(true);
             urlConnection.setChunkedStreamingMode(0);
-
             urlConnection.setRequestMethod("POST");
             urlConnection.setRequestProperty("Content-Type", "application/json");
 
@@ -117,15 +127,17 @@ public class APIManager {
             json.put("androidId", SessionManager.getInstance().user.getId().toString());
             json.put("name", SessionManager.getInstance().user.getName().toString());
 
+            // Incase there is an outputstream, write it to the input string.
             String input = json.toString();
-
             OutputStream os = urlConnection.getOutputStream();
             os.write(input.getBytes());
             os.flush();
 
+            // Read the input stream and cache it in our temp String variable.
             InputStream in = new BufferedInputStream(urlConnection.getInputStream());
             String temp = readStream(in);
-            System.out.println("Temp: " + temp);
+            // And print the results for debugging purposes
+            System.out.println("inputStream: " + temp);
 
         }
         catch(Exception e){
