@@ -53,6 +53,18 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.dicegameclient.WelcomeActivity" />
         </activity>
+        <activity
+            android:name=".activity_highscore_list"
+            android:label="@string/title_activity_activity_highscore_list" >
+        </activity>
+        <activity
+            android:name=".HighscoreListActivity"
+            android:label="@string/title_activity_highscore_list"
+            android:parentActivityName=".HighscoreActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.dicegameclient.HighscoreActivity" />
+        </activity>
     </application>
 
 </manifest>

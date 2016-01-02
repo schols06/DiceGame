@@ -6,7 +6,34 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context="com.example.dicegameclient.HighscoreActivity">
 
-    <TextView android:text="@string/hello_world" android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Personal"
+        android:id="@+id/button_personal"
+        android:layout_centerVertical="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:onClick="onStartIntentHighscoresPersonal"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Location: "
+        android:id="@+id/button_location"
+        android:layout_below="@+id/button_personal"
+        android:layout_alignStart="@+id/button_personal"
+        android:layout_alignParentEnd="true"
+        android:onClick="onStartIntentHighscoresLocation"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Select the type of highscores you want to view"
+        android:id="@+id/textView2"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:gravity="center_vertical|center_horizontal"/>
 
 </RelativeLayout>

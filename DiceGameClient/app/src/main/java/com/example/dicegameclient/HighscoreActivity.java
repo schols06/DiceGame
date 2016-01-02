@@ -1,16 +1,31 @@
 package com.example.dicegameclient;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
 
 public class HighscoreActivity extends AppCompatActivity {
+
+    public final static String EXTRA_MESSAGE = "com.example.dicegameclient.MESSAGE";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_highscore);
+        Button button = (Button) findViewById(R.id.button_location);
+        if(SessionManager.getInstance().user != null){
+            if(SessionManager.getInstance().user.lastScore != null){
+                System.out.println("Hi " + SessionManager.getInstance().user.lastScore.location);
+                button.setText("Location: " + SessionManager.getInstance().user.lastScore.location);
+            }
+        }
     }
 
     @Override
@@ -33,5 +48,23 @@ public class HighscoreActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void onStartIntentHighscoresPersonal(View view){
+        Intent intent = new Intent(this, HighscoreListActivity.class);
+        intent.putExtra(EXTRA_MESSAGE, "Highscores: Personal");
+        startActivity(intent);
+    }
+
+    public void onStartIntentHighscoresLocation(View view){
+        Intent intent = new Intent(this, HighscoreListActivity.class);
+        String message = "";
+        if(SessionManager.getInstance().user != null){
+            if(SessionManager.getInstance().user.lastScore != null){
+                message = SessionManager.getInstance().user.lastScore.location;
+            }
+        }
+        intent.putExtra(EXTRA_MESSAGE, "Highscores: " + message);
+        startActivity(intent);
     }
 }

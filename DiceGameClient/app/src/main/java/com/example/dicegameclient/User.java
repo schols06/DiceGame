@@ -62,7 +62,6 @@ public class User {
         name = "Enter a name";
         lastScore = new Score();
     }
-
     public boolean isValid(){
         return isValid(name);
     }

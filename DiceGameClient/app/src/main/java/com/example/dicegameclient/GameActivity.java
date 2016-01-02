@@ -117,7 +117,6 @@ public class GameActivity extends AppCompatActivity implements SensorEventListen
         if(APIManager.getInstance().hasInternetConnection(this)){
             new SetUserScoreTask().execute("");
         }
-        //TODO: Inform the user that registering somehow failed?.
     }
 
     private class SetUserScoreTask extends AsyncTask<String, Void, String> {

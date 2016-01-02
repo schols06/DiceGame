@@ -22,8 +22,10 @@ import java.net.URL;
  */
 public class APIManager {
 
-    private static final String DICE_GAME_GET_USER_API = ":8080/DiceServer/webresources/com.dicedb.users/";
-    private static final String DICE_GAME_SET_SCORE_API = ":8080/DiceServer/webresources/com.dicedb.scores/";
+    private static final String DICE_GAME_USER_API =                ":8080/DiceServer/webresources/com.dicedb.users/";
+    private static final String DICE_GAME_SET_SCORE_API =           ":8080/DiceServer/webresources/com.dicedb.scores/";
+    private static final String DICE_GAME_GET_USER_SCORES_API =     ":8080/DiceServer/webresources/com.dicedb.scores/androidId/";
+    private static final String DICE_GAME_GET_LOCATION_SCORES_API = ":8080/DiceServer/webresources/com.dicedb.scores/location/";
 
     private APIManager(){}
     private static APIManager _instance;
@@ -60,8 +62,7 @@ public class APIManager {
     public JSONObject getUser(String userId) throws IOException {
         InputStream is = null;
         try {
-            if(ip == null){ System.out.println("IP == NULL"); }else{System.out.println("IP: " + ip);}
-            URL url = new URL(ip + DICE_GAME_GET_USER_API + userId);
+            URL url = new URL(ip + DICE_GAME_USER_API + userId);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setReadTimeout(10000 /* milliseconds */);
             conn.setConnectTimeout(15000 /* milliseconds */);
@@ -74,14 +75,13 @@ public class APIManager {
             SessionManager.getInstance().lastResponse = response;
             is = conn.getInputStream();
 
-
-
             Reader reader = null;
             reader = new InputStreamReader(is, "UTF-8");
             // Create a char array, that can hold a max of 512 characters
             char[] buffer = new char[512];
             reader.read(buffer);
             String temp = new String(buffer);
+
             // Convert the InputStream into a string
             JSONObject data = new JSONObject(temp);
             System.out.println("Get User: " + data.toString());
@@ -104,7 +104,7 @@ public class APIManager {
         URL url;
         HttpURLConnection urlConnection = null;
         try {
-            url = new URL(ip + DICE_GAME_GET_USER_API);
+            url = new URL(ip + DICE_GAME_USER_API);
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setDoOutput(true);
             urlConnection.setChunkedStreamingMode(0);
@@ -168,9 +168,6 @@ public class APIManager {
 
             json.accumulate("androidId", jsonUser);
 
-
-
-
             System.out.println("JSON Score: \n" + json.toString());
 
             String input = json.toString();
@@ -189,6 +186,96 @@ public class APIManager {
         }
         finally {
             urlConnection.disconnect();
+        }
+    }
+
+    public JSONObject getUserScores(String userId) throws IOException {
+        InputStream is = null;
+        try {
+            URL url = new URL(ip + DICE_GAME_GET_USER_SCORES_API + userId);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setReadTimeout(10000 /* milliseconds */);
+            conn.setConnectTimeout(15000 /* milliseconds */);
+            conn.setRequestMethod("GET");
+            conn.setDoInput(true);
+            // Starts the query
+            conn.connect();
+            int response = conn.getResponseCode();
+            Log.d("Debug3", "The response is: " + response);
+            SessionManager.getInstance().lastResponse = response;
+            is = conn.getInputStream();
+
+            Reader reader = null;
+            reader = new InputStreamReader(is, "UTF-8");
+            // Create a char array, that can hold a max of 512 characters
+            char[] buffer = new char[512];
+            reader.read(buffer);
+            System.out.println("Hoi " + buffer);
+
+            String temp = new String(buffer);
+            // Convert the InputStream into a string
+            JSONObject data = new JSONObject(temp);
+            System.out.println("Get User Scores: " + data.toString());
+
+            conn.disconnect();
+
+            return data;
+        }catch(Exception e){
+            return new JSONObject();
+        } finally {
+            // Makes sure that the InputStream is closed after the app is
+            // finished using it.
+            if (is != null) {
+                is.close();
+            }
+        }
+    }
+
+    public JSONObject getLocationScores(String location) throws IOException {
+        InputStream is = null;
+        try {
+            URL url = new URL(ip + DICE_GAME_GET_LOCATION_SCORES_API + location);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setReadTimeout(10000 /* milliseconds */);
+            conn.setConnectTimeout(15000 /* milliseconds */);
+            conn.setRequestMethod("GET");
+            conn.setDoInput(true);
+            // Starts the query
+            conn.connect();
+            int response = conn.getResponseCode();
+            Log.d("Debug", "The response is: " + response);
+            SessionManager.getInstance().lastResponse = response;
+            is = conn.getInputStream();
+
+            Reader reader = null;
+            reader = new InputStreamReader(is, "UTF-8");
+            // Create a char array, that can hold a max of 512 characters
+            char[] buffer = new char[512];
+            reader.read(buffer);
+            String temp = new String(buffer);
+
+            System.out.println("Temp3: " + temp);
+            // Convert the InputStream into a string
+            JSONObject data = new JSONObject();
+            try {
+                data = new JSONObject(temp);
+            }catch(Exception ex){
+                System.out.println("Exception: " + ex.toString());
+            }
+
+            System.out.println("Get Scores Location: " + data.toString());
+
+            conn.disconnect();
+
+            return data;
+        }catch(Exception e){
+            return new JSONObject();
+        } finally {
+            // Makes sure that the InputStream is closed after the app is
+            // finished using it.
+            if (is != null) {
+                is.close();
+            }
         }
     }
 
