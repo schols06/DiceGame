@@ -124,29 +124,49 @@ public class ScoresFacadeREST extends AbstractFacade<Scores> {
     @Path("/androidId/{androidId}")
     @Produces({"application/json"})
     public List<Scores> findByAndroidId(@PathParam("androidId") Users androidId) {
-        System.out.println("Doing a get of 10 highest scores for androidId " 
+        System.out.println("Doing a get of 10 highest scores for androidId: " 
                 + androidId);
-        Query q = em.createQuery("SELECT s.value, s.location FROM Scores s WHERE s.androidId = :androidId ORDER BY s.value DESC");
+        // Build a query to select the 10 highest scores and their corresponding 
+        // locations for the submitted androidId.
+        Query q = em.createQuery("SELECT s.value, s.location FROM Scores s WHERE s.androidId = :androidId ORDER BY s.value DESC", Scores.class);
         // Set maximum results to 10.
         q.setMaxResults(10);
+        // Set paramater.
         q.setParameter("androidId", androidId);
+        // Debug
         System.out.println("Query: " + q);
+        // Set the list with scores in variable.
+        System.out.println("Paramters: " + q.getParameters());
         List<Scores> results = q.getResultList();
+        // Return results.
+        
+//        for(int i = 0; i < results.size(); i++){
+//            System.out.println("Testing: " + results.get(i));
+//        }
+        
+        System.out.println("Results: " + results.toString());
         return results;
     }
     
     @GET
     @Path("/location/{location}")
     @Produces({"application/json"})
-    public List<Scores> findByAndroidId(@PathParam("location") String location) {
+    public List<Scores> findByLocation(@PathParam("location") String location) {
         System.out.println("Doing a get of 10 highest scores for location: " 
                 + location);
-        Query q = em.createQuery("SELECT s.value, s.androidId.name FROM Scores s WHERE s.location = :location ORDER BY s.value DESC");
+        // Build a query to select 10 highest scores and corresponding names 
+        // for the submitted location.
+        Query q = em.createQuery("SELECT s.value, s.androidId.name FROM Scores s WHERE s.location = :location ORDER BY s.value DESC", Scores.class);
         // Set maximum results to 10.
         q.setMaxResults(10);
+        // Set parameter.
         q.setParameter("location", location);
+        // Debug
         System.out.println("Query: " + q);
+        // Set the list with scores in variable.
         List<Scores> results = q.getResultList();
+        // Return results.
+        System.out.println("Results: " + results);
         return results;
     }
     
