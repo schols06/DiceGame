@@ -12,19 +12,29 @@ import android.widget.ListView;
 
 import org.json.JSONObject;
 
+/**
+ * HighscoreListActivity. The activity that shows a list of highscores.
+ */
 public class HighscoreListActivity extends AppCompatActivity {
 
+    // Boolean that determines if we show the list of personal highscores. false if we display location based highscores.
     private boolean showPersonal = false;
+    // Values to display in the list.
     public String[] listValues = new String[9];
+    // The listView.
     private ListView listView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_highscore_list);
+        // Get the intent and the extra message it contains.
         Intent intent = getIntent();
         String message = intent.getStringExtra(HighscoreActivity.EXTRA_MESSAGE);
+        // Set the title of the current screen to show the message.
         setTitle(message);
+
+        // And store that we're either showing personal or not.
         showPersonal = false;
         if(message.equalsIgnoreCase("Highscores: Personal")){
             showPersonal = true;
@@ -69,12 +79,13 @@ public class HighscoreListActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-
+    /**
+     * GetUserScoresTask. Used to communicate with the server and get a list of the users scores.
+     * extends AsyncTask, to make sure the communication is done asynchronously from the UI thread.
+     */
     private class GetUserScoresTask extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... params) {
-
-            // params comes from the execute() call: params[0] is the url.
             try {
                 return APIManager.getInstance().getUserScores(params[0]).toString();
             } catch (Exception e) {
@@ -95,10 +106,13 @@ public class HighscoreListActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * GetLocationScoresTask. Used to communicate with the server and get a list of the current location' scores.
+     * extends AsyncTask, to make sure the communication is done asynchronously from the UI thread.
+     */
     private class GetLocationScoresTask extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... params) {
-
             // params comes from the execute() call: params[0] is the url.
             try {
                 return APIManager.getInstance().getLocationScores(params[0]).toString();

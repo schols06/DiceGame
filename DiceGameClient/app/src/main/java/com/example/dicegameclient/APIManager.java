@@ -18,15 +18,18 @@ import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 /**
- * Created by Luc on 18-12-2015.
- */
+ * APIManager.
+ * Singleton class that takes care of all communication with the API.
+ * */
 public class APIManager {
 
+    // API URL's
     private static final String DICE_GAME_USER_API =                ":8080/DiceServer/webresources/com.dicedb.users/";
     private static final String DICE_GAME_SET_SCORE_API =           ":8080/DiceServer/webresources/com.dicedb.scores/";
     private static final String DICE_GAME_GET_USER_SCORES_API =     ":8080/DiceServer/webresources/com.dicedb.scores/androidId/";
     private static final String DICE_GAME_GET_LOCATION_SCORES_API = ":8080/DiceServer/webresources/com.dicedb.scores/location/";
 
+    // Singleton part
     private APIManager(){}
     private static APIManager _instance;
     public static APIManager getInstance()
@@ -40,10 +43,19 @@ public class APIManager {
 
     private String ip = "http://";
 
+    /**
+     * setIP. Used to set the IP of the server we're communicating with.
+     * @param serverIP. The server IP as a string. Example: "195.178.0.12"
+     */
     public void setIP(String serverIP){
         ip = "http://" + serverIP;
     }
 
+    /**
+     * hasInternetConnection. Method that checks if the user has an active internet connection.
+     * @param activity. The current activity.
+     * @return true if the user has an active internet connection. False otherwise.
+     */
     public boolean hasInternetConnection(Activity activity){
         ConnectivityManager connMgr = (ConnectivityManager)activity.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
@@ -111,6 +123,10 @@ public class APIManager {
         }
     }
 
+    /**
+     * setUser. Used to create a new user in the database.
+     * @param name the name of the user we're registering
+     */
     public void setUser(String name){
         URL url;
         HttpURLConnection urlConnection = null;
@@ -138,7 +154,6 @@ public class APIManager {
             String temp = readStream(in);
             // And print the results for debugging purposes
             System.out.println("inputStream: " + temp);
-
         }
         catch(Exception e){
             Log.d("SetUser", e.toString());
@@ -148,6 +163,9 @@ public class APIManager {
         }
     }
 
+    /**
+     * setScore. Used to register a score in the database of the server.
+     */
     public void setScore(){
         URL url;
         HttpURLConnection urlConnection = null;
@@ -161,11 +179,7 @@ public class APIManager {
             urlConnection.setRequestProperty("Content-Type", "application/json");
 
             User tempUser = SessionManager.getInstance().user;
-
-
-
             JSONObject json = new JSONObject();
-
 
             int score = tempUser.lastScore.score;
             System.out.println("Score is (before post): " + score);
@@ -191,7 +205,6 @@ public class APIManager {
             System.out.println("Response was: " + urlConnection.getResponseCode() + "\nMessage: " + urlConnection.getResponseMessage());
             SessionManager.getInstance().user.lastScore.lastResponse = urlConnection.getResponseCode();
             urlConnection.disconnect();
-
         }
         catch(Exception e){
             Log.d("SetUserScore", e.toString());
@@ -201,6 +214,12 @@ public class APIManager {
         }
     }
 
+    /**
+     * getUserScores. Used to retrieve a list of scores of the current user.
+     * @param userId. The user' id of the user we're requesting scores for
+     * @return JSONObject. The list of scores as a JSONObject.
+     * @throws Exception Throws an exception incase the retrieving of scores fails.
+     */
     public JSONObject getUserScores(String userId) throws IOException {
         InputStream is = null;
         try {
@@ -216,21 +235,15 @@ public class APIManager {
             Log.d("Debug3", "The response is: " + response);
             SessionManager.getInstance().lastResponse = response;
             is = conn.getInputStream();
-
             Reader reader = null;
             reader = new InputStreamReader(is, "UTF-8");
             // Create a char array, that can hold a max of 512 characters
             char[] buffer = new char[512];
             reader.read(buffer);
-            System.out.println("Hoi " + buffer);
-
             String temp = new String(buffer);
             // Convert the InputStream into a string
             JSONObject data = new JSONObject(temp);
-            System.out.println("Get User Scores: " + data.toString());
-
             conn.disconnect();
-
             return data;
         }catch(Exception e){
             return new JSONObject();
@@ -243,6 +256,12 @@ public class APIManager {
         }
     }
 
+    /**
+     * getLocationScores. Used to retrieve a list of scores of the current location.
+     * @param location The location we're requesting scores for, as a String.
+     * @return JSONObject. The list of retrieved scores, as a JSONObject
+     * @throws IOException
+     */
     public JSONObject getLocationScores(String location) throws IOException {
         InputStream is = null;
         try {
@@ -291,7 +310,12 @@ public class APIManager {
         }
     }
 
-
+    /**
+     * readStream. Used to read an input stream and return it as a String.
+     * @param is. The InputStream.
+     * @return String, the result of reading the InputStream as a String.
+     * @throws IOException
+     */
     private String readStream(InputStream is) throws IOException {
         StringBuilder sb = new StringBuilder();
         BufferedReader r = new BufferedReader(new InputStreamReader(is),1000);
@@ -301,5 +325,4 @@ public class APIManager {
         is.close();
         return sb.toString();
     }
-
 }

@@ -21,6 +21,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Make sure the keyboard disappears when the user clicks someplace else.
         EditText editText = (EditText)findViewById(R.id.input_ip);
         editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
@@ -30,12 +32,18 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        // Make sure we have a user at this point, and reset the name to prevent caching.
+        // This way we're sure that we make another call to the server to check if this user is registered.
         if(SessionManager.getInstance().user != null){
             // Reset the name to prevent caching
             SessionManager.getInstance().user.setName("username");
         }
     }
 
+    /**
+     * hideKeyboard. Used to hide the keyboard.
+     * @param view The current view.
+     */
     public void hideKeyboard(View view) {
         InputMethodManager inputMethodManager =(InputMethodManager)getSystemService(Activity.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
@@ -64,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
             String userId = user.getId(getApplication());
             // If we have internet
             if(APIManager.getInstance().hasInternetConnection(this)){
+                // try and retrieve the user from the server, if any.
                 new GetUserTask().execute(userId);
             }else{
                 showToast("Active internet connection required...");
@@ -71,6 +80,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * GetUserTask. Used to communicate with the server and get a user, if any.
+     * extends AsyncTask, to make sure the communication is done asynchronously from the UI thread.
+     */
     private class GetUserTask extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... params) {
@@ -90,7 +103,6 @@ public class MainActivity extends AppCompatActivity {
                 return "Unable to retrieve data. URL may be invalid.";
             }
         }
-        // onPostExecute displays the results of the AsyncTask.
         @Override
         protected void onPostExecute(String result) {
             try {
@@ -116,7 +128,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
+    /**
+     * setUser. Used to set the values of the current user, retrieved from a JSONObject.
+     * @param obj The JSONObject containing the info.
+     * @return an int representing the response code we got from the server.
+     */
     private int setUser(JSONObject obj){
         //Double check if the id is the same
         String id = "";
@@ -141,8 +157,10 @@ public class MainActivity extends AppCompatActivity {
         return response;
     }
 
-
-
+    /**
+     * getInputIP. Used to retrieve the IP from the InputField.
+     * @return The IP as a String object.
+     */
     public String getInputIP(){
         // Get text
         EditText text = (EditText) findViewById(R.id.input_ip);
@@ -159,13 +177,18 @@ public class MainActivity extends AppCompatActivity {
         return string;
     }
 
+    /**
+     * getUser. Used to return a new User, and initialize the minimal values, such as the id.
+     * Checks if the user is registered, and welcomes the user.
+     * @return
+     */
     public User getUser(){
         Application application = getApplication();
         User user = new User(application);
         String id = user.getId(application);
-        //We don't know the name yet. If the user's id is known in the db, we fetch the name, otherwise make the user register
-        //Check if the user's id is known in the db
-        Boolean success = userIsRegistered(user);
+        //We don't know the name yet. For now, set it to a default so validation fails
+        user.setName("username");
+        Boolean success = user.isValid();
         if(success) {
             // User does exist in db.
 
@@ -173,23 +196,6 @@ public class MainActivity extends AppCompatActivity {
             showToast("Welcome " + user.getName() + "!");
         }
         return user;
-    }
-
-    /**
-     * userIsRegistered. Returns true if the user is registered in the db.
-     * @param user the user we would like to check.
-     * @return returns true if the user is known.
-     */
-    private Boolean userIsRegistered(User user){
-        //TODO: Check if we have the user in the database by calling the api and comparing the id.
-
-
-        //TODO: Set the users name if we succeed. (API Returns the name?)
-        user.setName("username");
-
-        // Return true, by calling the user.isValid method.
-        // This validates the fields of the user, to make sure they're not empty.
-        return user.isValid();
     }
 
     /**
@@ -203,11 +209,17 @@ public class MainActivity extends AppCompatActivity {
         toast.show();
     }
 
+    /**
+     * startIntentHome. Takes us to the "Home" screen.
+     */
     private void startIntentHome(){
         Intent intent = new Intent(this, WelcomeActivity.class);
         startActivity(intent);
     }
 
+    /**
+     * startIntentRegister. Takes us to the "Registration" screen.
+     */
     private void startIntentRegister(){
         Intent intent = new Intent(this, RegisterActivity.class);
         startActivity(intent);

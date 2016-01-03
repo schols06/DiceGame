@@ -1,18 +1,21 @@
 package com.example.dicegameclient;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ListView;
 
+/**
+ * HighscoreActivity. The activity of the highscore screen, which links to 2 possible screens:
+ * - The Highscore list of the current user.
+ * - The highscore list for the current location.
+ */
 public class HighscoreActivity extends AppCompatActivity {
 
+    // String used to retrieve extra messages when we change screens.
     public final static String EXTRA_MESSAGE = "com.example.dicegameclient.MESSAGE";
 
     @Override
@@ -50,12 +53,22 @@ public class HighscoreActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * onStartIntentHighscoresPersonal. Called when the user presses the button related to starting this activity.
+     * Starts the new activity that shows personal highscores.
+     * @param view The current view.
+     */
     public void onStartIntentHighscoresPersonal(View view){
         Intent intent = new Intent(this, HighscoreListActivity.class);
         intent.putExtra(EXTRA_MESSAGE, "Highscores: Personal");
         startActivity(intent);
     }
 
+    /**
+     * onStartIntentHighscoresLocation. Called when the user presses the button related to starting this activity.
+     * Starts the new activity that shows location highscores.
+     * @param view
+     */
     public void onStartIntentHighscoresLocation(View view){
         Intent intent = new Intent(this, HighscoreListActivity.class);
         String message = "";

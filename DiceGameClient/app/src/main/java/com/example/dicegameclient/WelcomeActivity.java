@@ -9,6 +9,9 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+/**
+ * WelcomeActivity. The homepage for the user.
+ */
 public class WelcomeActivity extends AppCompatActivity {
 
     @Override
@@ -40,25 +43,42 @@ public class WelcomeActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * setUsernameText. Used to set the user' name to the TextView on the UI.
+     */
     private void setUsernameText(){
         // Get text
         TextView text = (TextView) findViewById(R.id.text_username);
         text.setText(SessionManager.getInstance().user.getName());
     }
 
+    /**
+     * startIntentPlay. Start the intent that takes us to the game.
+     */
     private void startIntentPlay(){
         Intent intent = new Intent(this, GameActivity.class);
         startActivity(intent);
     }
-
+    /**
+     * startIntentHighscores. Start the intent that takes us to the highscores page.
+     */
     private void startIntentHighscores(){
         Intent intent = new Intent(this, HighscoreActivity.class);
         startActivity(intent);
     }
 
+    /**
+     * onPlay. Called when the user presses the play button.
+     * @param view The current view.
+     */
     public void onPlay(View view){
         startIntentPlay();
     }
+
+    /**
+     * onHighscore. Called when the user presses the highscore button.
+     * @param view
+     */
     public void onHighscore(View view){
         startIntentHighscores();
     }

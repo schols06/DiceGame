@@ -1,15 +1,11 @@
 package com.example.dicegameclient;
 
-import android.app.Activity;
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-
 /**
- * Created by Acer on 13/12/2015.
+ * SessionManager. Singleton used to hold information about the current session.
  */
 public class SessionManager {
 
+    // Singleton
     private SessionManager(){}
     private static SessionManager _instance;
     public static SessionManager getInstance()
@@ -21,9 +17,9 @@ public class SessionManager {
         return _instance;
     }
 
+    // The last response we got from the server.
     public int lastResponse = -1;
 
+    // The current user.
     public User user = null;
-
-
 }

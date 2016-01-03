@@ -16,6 +16,9 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
+/**
+ * RegisterActivity. The activity used to register the user.
+ */
 public class RegisterActivity extends AppCompatActivity {
 
     @Override
@@ -46,7 +49,12 @@ public class RegisterActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * onRegister. Called when the user hits the register button.
+     * @param view The current view.
+     */
     public void onRegister(View view){
+        // Get the username the user entered form the input field.
         String username = getInputString();
         // Let the user class check if this is a valid username
         if(SessionManager.getInstance().user.isValid(username)){
@@ -61,14 +69,19 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * SetUserTask. Used to communicate with the server and register a user.
+     * extends AsyncTask, to make sure the communication is done asynchronously from the UI thread.
+     */
     private class SetUserTask extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... params) {
-
-            // params comes from the execute() call: params[0] is the url.
             try {
+                // Get the username from the parameters.
                 String userName = params[0].toString();
+                // Call the APIManager to register this user.
                 APIManager.getInstance().setUser(userName);
+                // Pass along the username parameters.
                 return userName;
             } catch (Exception e) {
                 return "Unable to retrieve data. URL may be invalid.";
@@ -79,8 +92,11 @@ public class RegisterActivity extends AppCompatActivity {
         protected void onPostExecute(String result) {
             try {
                 System.out.println("Result:" + result);
+                // Get the name, should be stored by the apimanager.
                 String tempName = SessionManager.getInstance().user.getName();
+                // Double check the name.
                 if(result.equalsIgnoreCase(tempName)){
+                    // Start the game, and welcome the user.
                     startIntentPlay();
                     showToast("Welcome " + tempName);
                 }
@@ -101,22 +117,26 @@ public class RegisterActivity extends AppCompatActivity {
         toast.show();
     }
 
+    /**
+     * getInputString. Returns the contents of the InputField as a string.
+     * @return The contents of the inputfield as a String.
+     */
     private String getInputString(){
         // Get text
         EditText text = (EditText) findViewById(R.id.input_name);
-
         // Optional checking for special characters and formatting
         String string = text.getText().toString();
-
         // if it is null or empty
         if(string == null || string.isEmpty()){
             string = "Enter a name";
         }
-
         // return it
         return string;
     }
 
+    /**
+     * startIntentPlay. Takes us to the game screen.
+     */
     private void startIntentPlay(){
         Intent intent = new Intent(this, GameActivity.class);
         startActivity(intent);
